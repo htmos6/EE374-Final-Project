@@ -33,7 +33,7 @@ code_words = ["Waxwing";"Ostrich";"Linnet";"Ibis";"Hawk";"Dove";"Rook";"Drake";"
 lib.Properties.RowNames = code_words;                                                           % Assign your new row names to the table
 lib.CodeWord=[];                                                                                % delete codeword column to find necessary row easily
 
-writetable(lib,'myData.csv','WriteRowNames',true,'Delimiter',' ');  
+writetable(lib,'lib_new.csv','WriteRowNames',true,'Delimiter',' ');  
 
 outside_diameter = lib{conductor_name,4};                                                       % For a given conductor name, find its corresponding "outside-diameter"
 R_ac = lib{[conductor_name],6};                                                                 % For a given conductor name, find its corresponding "AC-resistance"
