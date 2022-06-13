@@ -1,4 +1,4 @@
-Row Aluminum_Area_m2 Strand Layers_Of_Aluminum Outside_Diameter_m DC_Resistance_20C_ohm_per_m AC_50Hz_Resistance_20C_ohm_per_m GMR_m
+Row Aluminum_Area_m2 Strand, Layers_Of_Aluminum, Outside_Diameter_m, DC_Resistance_20C_ohm_per_m, AC_50Hz_Resistance_20C_ohm_per_m, GMR_m,
 Waxwing 0.0001351895553972 18/1 2 0.0154686 0.00021194225754 13732.28345056 0.00603504
 Ostrich 0.0001520122437 26/7 2 0.017272 0.00018667979031 12086.6141609 0.00697992
 Linnet 0.0001704563959356 26/7 2 0.0183134 0.00016633858293 10775.59054019 0.00740664
