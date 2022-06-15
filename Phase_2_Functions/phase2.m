@@ -1,8 +1,8 @@
 % To do list:
 %     Under if 1:
 %         Calculate
-%             R_pu 
-%             B_pu 
+%             R_pu = R_total = (R_dc + R_ac)*length; ????
+%             For capacitance include effect of earth  
 %     Under if 2:
 %         Calculate
 %             R_pu 
@@ -17,26 +17,31 @@ library_path  = 'C:\Users\Legion\Documents\MATLAB\EE374_project\datas\library.cs
 
 [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor] = e237441_p1(text_path, library_path); % take necessary parameters from phase 1 function in order not to repeat same code again 
 
-[R_pu, X_pu, B_pu] = e237441_p2(text_path_2, library_path);
+[R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path);
 
 
 function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
-
-    [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor] = e237441_p1(text_path, library_path);
+    
+    [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor, R_dc] = e237441_p1(text_path, library_path);
+    
     frequency = 50; % frequency is given as 50Hz
     conductor_radius = outside_diameter/2.0000; % Divide outside diameter by 2 which gives the radius
     [GMR_bundle, r_eq] = bundle_GMR_calculator(conductor_radius, GMR_conductor, bundle_distance, number_of_bundle); % find your GMR of the bundle in another function to repeat many number of possibilities
 
-    lines = strsplit(fileread(text_path), {'\r', '\n'}); % read your text file to collect necessary position informations
+    lines = strsplit(fileread(text_path), {'\r', '\n'}); % does not depend on number of circuit, hence extract outside the if blocks.
+    
     if (number_of_circuit == 1)
         c1_c = [str2double((lines{16}.')),str2double((lines{17}.'))]; % extract position of circuit 1 phase c
         c1_a = [str2double((lines{19}.')),str2double((lines{20}.'))]; % extract position of circuit 1 phase a
         c1_b = [str2double((lines{22}.')),str2double((lines{23}.'))]; % extract position of circuit 1 phase b
-       
-        [d_ab, d_bc, d_ac] = distance_finder(c1_a, c1_b, c1_c); % calculate distance between phases according to phase positions
-        L = L_calculator(GMR_bundle, d_ab, d_bc, d_ac)*length; % calculate total inductance by multiplying length
+        
+        [L,C] = distance_finder_1_cct(c1_a, c1_b, c1_c, GMR_bundle, r_eq, length); % calculate distance between phases according to phase positions
+        
         X_L = 2*pi*frequency*L; % calculate total reactance
-        X_pu = X_pu_calculator(S_base, V_base, X_L); % calculate total reactance in per unit system
+        B_C = 2*pi*frequency*C; % calculate total susceptance
+        R_total = (R_dc + R_ac)*length; % ??????????????????????????
+        
+        [R_pu, X_pu, B_pu] = RXB_pu_calculator(S_base, V_base, X_L, B_C, R_total); % calculate total reactance in per unit system
         
     elseif (number_of_circuit == 2)
         c1_c = [str2double((lines{16}.')),str2double((lines{17}.'))]; % extract position of circuit 1 phase c
@@ -45,30 +50,99 @@ function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
         c2_c = [str2double((lines{25}.')),str2double((lines{26}.'))]; % extract position of circuit 2 phase c
         c2_a = [str2double((lines{28}.')),str2double((lines{29}.'))]; % extract position of circuit 2 phase a
         c2_b = [str2double((lines{31}.')),str2double((lines{32}.'))]; % extract position of circuit 2 phase b
+        [L, C] = distance_finder_2_cct(c1_a, c1_b, c1_c, c2_a, c2_b, c2_c, GMR_bundle, r_eq, length);
+    
+        X_L = 2*pi*frequency*L; % calculate total reactance
+        B_C = 2*pi*frequency*C; % calculate total susceptance
+        R_total = (R_dc + R_ac)*length; % ??????????????????????????
+        
+        [R_pu, X_pu, B_pu] = RXB_pu_calculator(S_base, V_base, X_L, B_C, R_total) % calculate total reactance in per unit system
     end
 end
 
-%%% PER UNIT REACTANCE CALCULATOR %%%
-function X_pu = X_pu_calculator(S_base, V_base, X_L)
+
+%%% PER UNIT REACTANCE AND SUSCEPTANCE CALCULATOR %%%
+function [R_pu, X_pu, B_pu] = RXB_pu_calculator(S_base, V_base, X_L, B_C, R_total)
+    
     S_base = S_base/1000; % in terms of KVA 
     V_base = V_base/1000; % in terms of KVA 
+    R_pu = (R_total*S_base)/(((V_base)^2)*1000); % ??????????????????????????
     X_pu = (X_L*S_base)/(((V_base)^2)*1000); % calculate X_pu
+    B_pu = (B_C*(((V_base)^2)*1000))/S_base; % calculate B_pu
 end
 
-%%% INDUCTANCE CALCULATOR %%%
-function L = L_calculator(GMR, d_ab, d_bc, d_ac)
-    GMD = (d_ab*d_bc*d_ac)^(1/3); % calculate GMD
-    L = (2*1e-7)*(log(GMD/GMR)); % calculate inductance
-end
 
-%%% DISTANCE CALCULATOR BETWEEN PHASES %%%
-function [d_ab, d_bc, d_ac] = distance_finder(c1_a, c1_b, c1_c)
+%%% DISTANCE/GMR/GMD CALCULATOR BETWEEN PHASES FOR SINGLE CIRCUIT %%%
+function [L, C] = distance_finder_1_cct(c1_a, c1_b, c1_c, GMR, r_eq, length)
+
+    %%% FIND DISTANCES BETWEEN POINTS %%%
     d_ab = ((c1_a(1)-c1_b(1))^2 + (c1_a(2)-c1_b(2))^2 )^(0.5);
     d_bc = ((c1_b(1)-c1_c(1))^2 + (c1_b(2)-c1_c(2))^2 )^(0.5);
     d_ac = ((c1_a(1)-c1_c(1))^2 + (c1_a(2)-c1_c(2))^2 )^(0.5);
+    
+    %%% CALCULATE GMD %%%
+    GMD = (d_ab*d_bc*d_ac)^(1/3);
+    
+    %%% CALCULATE INDUCTANCE & CAPACITANCE %%%
+    L = (2*1e-7)*(log(GMD/GMR))*length; % calculate inductance
+    C = ((2*pi*8.85*1e-12)/log(GMD/r_eq))*length; % calculate capacitance
 end
 
-%%% BUNDLE GMR CALCULATOR %%%
+
+%%% DISTANCE/GMR/GMD CALCULATOR BETWEEN PHASES FOR DOUBLE CIRCUIT %%%
+function [L, C] = distance_finder_2_cct(c1_a, c1_b, c1_c, c2_a, c2_b, c2_c, GMR_bundle, r_eq, length)
+    
+    %%% FIND DISTANCES BETWEEN POINTS %%%
+    d_c1a_c2a = ((c1_a(1)-c2_a(1))^2 + (c1_a(2)-c2_a(2))^2 )^(0.5);
+    d_c1b_c2b = ((c1_b(1)-c2_b(1))^2 + (c1_b(2)-c2_b(2))^2 )^(0.5);
+    d_c1c_c2c = ((c1_c(1)-c2_c(1))^2 + (c1_c(2)-c2_c(2))^2 )^(0.5);
+    
+    d_c1a_c1b = ((c1_a(1)-c1_b(1))^2 + (c1_a(2)-c1_b(2))^2 )^(0.5); % RED
+    d_c1a_c2b = ((c1_a(1)-c2_b(1))^2 + (c1_a(2)-c2_b(2))^2 )^(0.5); % RED
+    d_c1a_c1c = ((c1_a(1)-c1_c(1))^2 + (c1_a(2)-c1_c(2))^2 )^(0.5); % YELLOW
+    d_c1a_c2c = ((c1_a(1)-c2_c(1))^2 + (c1_a(2)-c2_c(2))^2 )^(0.5); % YELLOW 
+    
+    d_c1b_c1c = ((c1_b(1)-c1_c(1))^2 + (c1_b(2)-c1_c(2))^2 )^(0.5); % PURPLE
+    d_c1b_c2c = ((c1_b(1)-c2_c(1))^2 + (c1_b(2)-c2_c(2))^2 )^(0.5); % PURPLE
+    d_c1b_c2a = ((c1_b(1)-c2_a(1))^2 + (c1_b(2)-c2_a(2))^2 )^(0.5); % RED
+    
+    d_c1c_c2b = ((c1_c(1)-c2_b(1))^2 + (c1_c(2)-c2_b(2))^2 )^(0.5); % PURPLE
+    d_c1c_c2a = ((c1_c(1)-c2_a(1))^2 + (c1_c(2)-c2_a(2))^2 )^(0.5); % YELLOW
+    
+    d_c2a_c2b = ((c2_a(1)-c2_b(1))^2 + (c2_a(2)-c2_b(2))^2 )^(0.5); % RED
+    d_c2a_c2c = ((c2_a(1)-c2_c(1))^2 + (c2_a(2)-c2_c(2))^2 )^(0.5); % YELLOW
+    
+    d_c2b_c2c = ((c2_b(1)-c2_c(1))^2 + (c2_b(2)-c2_c(2))^2 )^(0.5); % PURPLE
+    
+    
+    %%% CALCULATE GMR %%%
+    GMR_AA = (d_c1a_c2a * GMR_bundle)^0.5;
+    GMR_BB = (d_c1b_c2b * GMR_bundle)^0.5;
+    GMR_CC = (d_c1c_c2c * GMR_bundle)^0.5;
+    GMR_3_PHASE = (GMR_AA * GMR_BB * GMR_CC)^(1/3);
+    
+    
+    %%% CALCULATE R_EQ %%%
+    R_EQV_AA = (d_c1a_c2a * r_eq)^0.5; % RED LINE MULTIPLICATIONS
+    R_EQV_BB = (d_c1b_c2b * r_eq)^0.5; % YELLOW LINE MULTIPLICATIONS
+    R_EQV_CC = (d_c1c_c2c * r_eq)^0.5; % PURPLE LINE MULTIPLICATIONS
+    R_EQV_3_PHASE = (R_EQV_AA * R_EQV_BB * R_EQV_CC)^(1/3);
+   
+    
+    %%% CALCULATE GMD %%%
+    GMD_AB = (d_c1a_c2b * d_c1a_c1b * d_c1b_c2a * d_c2a_c2b)^(1/4); % RED LINE MULTIPLICATIONS
+    GMD_AC = (d_c1a_c1c * d_c1a_c2c * d_c1c_c2a * d_c2a_c2c)^(1/4); % YELLOW LINE MULTIPLICATIONS
+    GMD_BC = (d_c1b_c1c * d_c1b_c2c * d_c1c_c2b * d_c2b_c2c)^(1/4); % PURPLE LINE MULTIPLICATIONS
+    GMD_3_PHASE = (GMD_AB * GMD_AC * GMD_BC)^(1/3);
+    
+    
+    %%% CALCULATE INDUCTANCE & CAPACITANCE %%%
+    L = (2*1e-7)*(log(GMD_3_PHASE/GMR_3_PHASE))*length; % calculate inductance
+    C = ((2*pi*8.85*1e-12)/log(GMD_3_PHASE/R_EQV_3_PHASE))*length; % calculate capacitance
+end
+
+
+%%% BUNDLE GMR & R_EQ CALCULATOR %%%
 function [GMR_bundle, r_eq] = bundle_GMR_calculator(conductor_radius, GMR_conductor, bundle_distance, number_of_bundle)
     switch number_of_bundle
         case 1
@@ -96,7 +170,7 @@ function [GMR_bundle, r_eq] = bundle_GMR_calculator(conductor_radius, GMR_conduc
 end
 
 %%% PHASE 1 FUNCTION %%%
-function [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor] = e237441_p1(text_path, library_path)
+function [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor, R_dc] = e237441_p1(text_path, library_path)
     lib = readtable(library_path); % read excel file as a table
 
     lib.Properties.VariableNames([2 3 4 5 6 7 8 ]) = {'Aluminum_Area_m2' 'Strand' 'Layers_Of_Aluminum' 'Outside_Diameter_m' 'DC_Resistance_20C_ohm_per_m' 'AC_50Hz_Resistance_20C_ohm_per_m' 'GMR_m'};
@@ -125,6 +199,7 @@ function [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, 
     writetable(lib,'lib_new.csv','WriteRowNames',true,'Delimiter',' ')  
 
     outside_diameter = lib{conductor_name,4}; % For a given conductor name, find its corresponding "outside-diameter"
+    R_dc = lib{[conductor_name],5}; % For a given conductor name, find its corresponding "DC-resistance"
     R_ac = lib{[conductor_name],6}; % For a given conductor name, find its corresponding "AC-resistance"
     GMR_conductor = lib{[conductor_name],7}; % For a given conductor name, find its corresponding "GMR-conductor-length"
 
