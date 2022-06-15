@@ -1,11 +1,10 @@
 % To do list:
 %     Under if 1:
 %         Calculate
-%             R_pu = R_total = ????
+%             R_pu ????
 %     Under if 2:
 %         Calculate
 %             R_pu ????
-%             Capacitance & Earth effect & how to calculate ????
 
 close all; clear all; clc;
 
@@ -15,7 +14,7 @@ library_path  = 'C:\Users\Legion\Documents\MATLAB\EE374_project\datas\library.cs
 
 [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor] = e237441_p1(text_path, library_path); % take necessary parameters from phase 1 function in order not to repeat same code again 
 
-[R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path);
+[R_pu, X_pu, B_pu] = e237441_p2(text_path_2, library_path);
 
 
 function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
@@ -23,6 +22,7 @@ function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
     
     frequency = 50; % frequency is given as 50Hz
     conductor_radius = outside_diameter/2.0000; % Divide outside diameter by 2 which gives the radius
+    
     [GMR_bundle, r_eq] = bundle_GMR_calculator(conductor_radius, GMR_conductor, bundle_distance, number_of_bundle); % find your GMR of the bundle in another function to repeat many number of possibilities
 
     lines = strsplit(fileread(text_path), {'\r', '\n'}); % does not depend on number of circuit, hence extract outside the if blocks.
@@ -38,7 +38,7 @@ function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
         B_C = 2*pi*frequency*C; % calculate total susceptance
         R_total = (R_dc + R_ac)*length; % ??????????????????????????
         
-        [R_pu, X_pu, B_pu] = RXB_pu_calculator(S_base, V_base, X_L, B_C, R_total); % calculate total reactance in per unit system
+        [R_pu, X_pu, B_pu] = RXB_pu_calculator(S_base, V_base, X_L, B_C, R_total) % calculate necessary parameters in per unit system
         
     elseif (number_of_circuit == 2)
         c1_c = [str2double((lines{16}.')),str2double((lines{17}.'))]; % extract position of circuit 1 phase c
@@ -47,13 +47,14 @@ function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
         c2_c = [str2double((lines{25}.')),str2double((lines{26}.'))]; % extract position of circuit 2 phase c
         c2_a = [str2double((lines{28}.')),str2double((lines{29}.'))]; % extract position of circuit 2 phase a
         c2_b = [str2double((lines{31}.')),str2double((lines{32}.'))]; % extract position of circuit 2 phase b
+        
         [L, C] = distance_finder_2_cct(c1_a, c1_b, c1_c, c2_a, c2_b, c2_c, GMR_bundle, r_eq, length);
     
         X_L = 2*pi*frequency*L; % calculate total reactance
         B_C = 2*pi*frequency*C; % calculate total susceptance
         R_total = (R_dc + R_ac)*length; % ??????????????????????????
         
-        [R_pu, X_pu, B_pu] = RXB_pu_calculator(S_base, V_base, X_L, B_C, R_total) % calculate total reactance in per unit system
+        [R_pu, X_pu, B_pu] = RXB_pu_calculator(S_base, V_base, X_L, B_C, R_total) % calculate necessary parameters in per unit system
     end
 end
 
@@ -91,22 +92,22 @@ function [L, C] = distance_finder_2_cct(c1_a, c1_b, c1_c, c2_a, c2_b, c2_c, GMR_
     d_c1b_c2b = ((c1_b(1)-c2_b(1))^2 + (c1_b(2)-c2_b(2))^2 )^(0.5);
     d_c1c_c2c = ((c1_c(1)-c2_c(1))^2 + (c1_c(2)-c2_c(2))^2 )^(0.5);
     
-    d_c1a_c1b = ((c1_a(1)-c1_b(1))^2 + (c1_a(2)-c1_b(2))^2 )^(0.5); % RED
-    d_c1a_c2b = ((c1_a(1)-c2_b(1))^2 + (c1_a(2)-c2_b(2))^2 )^(0.5); % RED
-    d_c1a_c1c = ((c1_a(1)-c1_c(1))^2 + (c1_a(2)-c1_c(2))^2 )^(0.5); % YELLOW
-    d_c1a_c2c = ((c1_a(1)-c2_c(1))^2 + (c1_a(2)-c2_c(2))^2 )^(0.5); % YELLOW 
+    d_c1a_c1b = ((c1_a(1)-c1_b(1))^2 + (c1_a(2)-c1_b(2))^2 )^(0.5); % RED LINES
+    d_c1a_c2b = ((c1_a(1)-c2_b(1))^2 + (c1_a(2)-c2_b(2))^2 )^(0.5); % RED LINES
+    d_c1a_c1c = ((c1_a(1)-c1_c(1))^2 + (c1_a(2)-c1_c(2))^2 )^(0.5); % YELLOW LINES
+    d_c1a_c2c = ((c1_a(1)-c2_c(1))^2 + (c1_a(2)-c2_c(2))^2 )^(0.5); % YELLOW LINES
     
-    d_c1b_c1c = ((c1_b(1)-c1_c(1))^2 + (c1_b(2)-c1_c(2))^2 )^(0.5); % PURPLE
-    d_c1b_c2c = ((c1_b(1)-c2_c(1))^2 + (c1_b(2)-c2_c(2))^2 )^(0.5); % PURPLE
-    d_c1b_c2a = ((c1_b(1)-c2_a(1))^2 + (c1_b(2)-c2_a(2))^2 )^(0.5); % RED
+    d_c1b_c1c = ((c1_b(1)-c1_c(1))^2 + (c1_b(2)-c1_c(2))^2 )^(0.5); % PURPLE LINES
+    d_c1b_c2c = ((c1_b(1)-c2_c(1))^2 + (c1_b(2)-c2_c(2))^2 )^(0.5); % PURPLE LINES
+    d_c1b_c2a = ((c1_b(1)-c2_a(1))^2 + (c1_b(2)-c2_a(2))^2 )^(0.5); % RED LINES
     
-    d_c1c_c2b = ((c1_c(1)-c2_b(1))^2 + (c1_c(2)-c2_b(2))^2 )^(0.5); % PURPLE
-    d_c1c_c2a = ((c1_c(1)-c2_a(1))^2 + (c1_c(2)-c2_a(2))^2 )^(0.5); % YELLOW
+    d_c1c_c2b = ((c1_c(1)-c2_b(1))^2 + (c1_c(2)-c2_b(2))^2 )^(0.5); % PURPLE LINES
+    d_c1c_c2a = ((c1_c(1)-c2_a(1))^2 + (c1_c(2)-c2_a(2))^2 )^(0.5); % YELLOW LINES
     
-    d_c2a_c2b = ((c2_a(1)-c2_b(1))^2 + (c2_a(2)-c2_b(2))^2 )^(0.5); % RED
-    d_c2a_c2c = ((c2_a(1)-c2_c(1))^2 + (c2_a(2)-c2_c(2))^2 )^(0.5); % YELLOW
+    d_c2a_c2b = ((c2_a(1)-c2_b(1))^2 + (c2_a(2)-c2_b(2))^2 )^(0.5); % RED LINES
+    d_c2a_c2c = ((c2_a(1)-c2_c(1))^2 + (c2_a(2)-c2_c(2))^2 )^(0.5); % YELLOW LINES
     
-    d_c2b_c2c = ((c2_b(1)-c2_c(1))^2 + (c2_b(2)-c2_c(2))^2 )^(0.5); % PURPLE
+    d_c2b_c2c = ((c2_b(1)-c2_c(1))^2 + (c2_b(2)-c2_c(2))^2 )^(0.5); % PURPLE LINES
     
     
     %%%%%%%% FIND DISTANCES TO CALCULATE EARTH EFFECT %%%%%%%% 
@@ -117,44 +118,50 @@ function [L, C] = distance_finder_2_cct(c1_a, c1_b, c1_c, c2_a, c2_b, c2_c, GMR_
     c2_a_G = [c2_a(1), -c2_a(2)];
     c2_b_G = [c2_b(1), -c2_b(2)];
     c2_c_G = [c2_c(1), -c2_c(2)]; 
-    %%% CALCULATE TURQUOISE COLOR %%%
+    
+    %%% CALCULATE TURQUOISE COLOR LINES %%%
     turquoise_a = (((c2_c(1)-c1_c_G(1))^2 + (c2_c(2)-c1_c_G(2))^2 )^(0.5));
     turquoise_b = (((c1_c(1)-c1_c_G(1))^2 + (c1_c(2)-c1_c_G(2))^2 )^(0.5));
     turquoise_c = (((c1_c(1)-c2_c_G(1))^2 + (c1_c(2)-c2_c_G(2))^2 )^(0.5));
     turquoise_d = (((c2_c(1)-c2_c_G(1))^2 + (c2_c(2)-c2_c_G(2))^2 )^(0.5));
     turquoise = (turquoise_a * turquoise_b * turquoise_c * turquoise_d)^(1/4);
-    %%% CALCULATE DARK GREEN COLOR %%%
+    
+    %%% CALCULATE DARK GREEN COLOR LINES %%%
     dark_green_a = (((c1_a(1)-c1_a_G(1))^2 + (c1_a(2)-c1_a_G(2))^2 )^(0.5));
     dark_green_b = (((c1_a(1)-c2_a_G(1))^2 + (c1_a(2)-c2_a_G(2))^2 )^(0.5));
     dark_green_c = (((c2_a(1)-c2_a_G(1))^2 + (c2_a(2)-c2_a_G(2))^2 )^(0.5));
     dark_green_d = (((c2_a(1)-c1_a_G(1))^2 + (c2_a(2)-c1_a_G(2))^2 )^(0.5));
     dark_green = (dark_green_a * dark_green_b * dark_green_c * dark_green_d)^(1/4);
-    %%% CALCULATE CREAM COLOR %%%
+    
+    %%% CALCULATE CREAM COLOR LINES %%%
     cream_a = (((c1_b(1)-c1_b_G(1))^2 + (c1_b(2)-c1_b_G(2))^2 )^(0.5));
     cream_b = (((c1_b(1)-c2_b_G(1))^2 + (c1_b(2)-c2_b_G(2))^2 )^(0.5));
     cream_c = (((c2_b(1)-c1_b_G(1))^2 + (c2_b(2)-c1_b_G(2))^2 )^(0.5));
     cream_d = (((c2_b(1)-c2_b_G(1))^2 + (c2_b(2)-c2_b_G(2))^2 )^(0.5));
     cream = (cream_a * cream_b * cream_c * cream_d)^(1/4);
-    %%% CALCULATE YELLOW COLOR %%%
+    
+    %%% CALCULATE YELLOW COLOR LINES %%%
     yellow_a = (((c1_a(1)-c1_c_G(1))^2 + (c1_a(2)-c1_c_G(2))^2 )^(0.5));
     yellow_b = (((c1_a(1)-c2_c_G(1))^2 + (c1_a(2)-c2_c_G(2))^2 )^(0.5));
     yellow_c = (((c2_a(1)-c1_c_G(1))^2 + (c2_a(2)-c1_c_G(2))^2 )^(0.5));
     yellow_d = (((c2_a(1)-c2_c_G(1))^2 + (c2_a(2)-c2_c_G(2))^2 )^(0.5));
     yellow = (yellow_a * yellow_b * yellow_c * yellow_d)^(1/4);
-    %%% CALCULATE RED COLOR %%%
+    
+    %%% CALCULATE RED COLOR LINES %%%
     red_a = (((c1_a(1)-c1_b_G(1))^2 + (c1_a(2)-c1_b_G(2))^2 )^(0.5));
     red_b = (((c1_a(1)-c2_b_G(1))^2 + (c1_a(2)-c2_b_G(2))^2 )^(0.5));
     red_c = (((c2_a(1)-c1_b_G(1))^2 + (c2_a(2)-c1_b_G(2))^2 )^(0.5));
     red_d = (((c2_a(1)-c2_b_G(1))^2 + (c2_a(2)-c2_b_G(2))^2 )^(0.5));
     red = (red_a * red_b * red_c * red_d)^(1/4);
-    %%% CALCULATE BLUE COLOR %%%
+    
+    %%% CALCULATE BLUE COLOR LINES %%%
     blue_a = (((c1_b(1)-c1_c_G(1))^2 + (c1_b(2)-c1_c_G(2))^2 )^(0.5));
     blue_b = (((c1_b(1)-c2_c_G(1))^2 + (c1_b(2)-c2_c_G(2))^2 )^(0.5));
     blue_c = (((c2_b(1)-c1_c_G(1))^2 + (c2_b(2)-c1_c_G(2))^2 )^(0.5));
     blue_d = (((c2_b(1)-c2_c_G(1))^2 + (c2_b(2)-c2_c_G(2))^2 )^(0.5));
     blue = (blue_a * blue_b * blue_c * blue_d)^(1/4);
     
-    
+    %%%%%%%% GMR/GMD/R_EQ/CAPACITANCE WITH EARTH EFFECT CALCULATIONS %%%%%%%%
     %%% CALCULATE GMR %%%
     GMR_AA = (d_c1a_c2a * GMR_bundle)^0.5;
     GMR_BB = (d_c1b_c2b * GMR_bundle)^0.5;
@@ -179,7 +186,7 @@ function [L, C] = distance_finder_2_cct(c1_a, c1_b, c1_c, c2_a, c2_b, c2_c, GMR_
    
     %%% CALCULATE INDUCTANCE & CAPACITANCE %%%
     L = (2*1e-7)*(log(GMD_3_PHASE/GMR_3_PHASE))*length; % calculate inductance
-    C = ((2*pi*8.85418782*1e-12)/(log(GMD_3_PHASE/GMR_3_PHASE)-log(num/denum)))*length;
+    C = ((2*pi*8.85418782*1e-12)/(log(GMD_3_PHASE/R_EQV_3_PHASE)-log(num/denum)))*length;
 
 end
 
@@ -197,8 +204,8 @@ function [GMR_bundle, r_eq] = bundle_GMR_calculator(conductor_radius, GMR_conduc
             r_eq = (((bundle_distance)^2) * conductor_radius)^(1/3);
             GMR_bundle = (((bundle_distance)^2) * GMR_conductor)^(1/3);
         case 4
-            r_eq = ((((bundle_distance)^3) * conductor_radius)^(1/4))*1.09;
-            GMR_bundle = ((((bundle_distance)^3) * GMR_conductor)^(1/4))*1.09;
+            r_eq = ((((bundle_distance)^3) * conductor_radius)^(1/4))*1.0905;
+            GMR_bundle = ((((bundle_distance)^3) * GMR_conductor)^(1/4))*1.0905;
         case 5
             r_eq = ((((bundle_distance)^4) * conductor_radius)^(1/5))*1.46956;
             GMR_bundle = ((((bundle_distance)^4) * GMR_conductor)^(1/5))*1.46956;
@@ -210,6 +217,7 @@ function [GMR_bundle, r_eq] = bundle_GMR_calculator(conductor_radius, GMR_conduc
             GMR_bundle = ((((bundle_distance)^7) * GMR_conductor)^(1/8))*1.638703;
     end
 end
+
 
 %%% PHASE 1 FUNCTION %%%
 function [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor, R_dc] = e237441_p1(text_path, library_path)
@@ -248,6 +256,7 @@ function [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, 
     strand = char(lib{[conductor_name],2});                                                                                           
     strand = myDivider(strand); % Send "strand" variable to function, function converts it to double by parsing
 end
+
 
 %%% STRING DIVISION FUNCTION FOR PHASE 1 %%% 
 function y = myDivider(x) % If we need to use "strand" variable, it converts string data type to double i.e. "21/3" --> 21/3 = 7
