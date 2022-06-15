@@ -5,7 +5,7 @@
 %     Under if 2:
 %         Calculate
 %             R_pu ????
-%             X_pu Earth effect ????
+%             Capacitance & Earth effect & how to calculate ????
 
 close all; clear all; clc;
 
@@ -80,7 +80,7 @@ function [L, C] = distance_finder_1_cct(c1_a, c1_b, c1_c, GMR, r_eq, length)
     
     %%% CALCULATE INDUCTANCE & CAPACITANCE %%%
     L = (2*1e-7)*(log(GMD/GMR))*length; % calculate inductance
-    C = ((2*pi*8.85*1e-12)/log(GMD/r_eq))*length; % calculate capacitance
+    C = ((2*pi*8.85418782*1e-12)/log(GMD/r_eq))*length; % calculate capacitance
 end
 
 
@@ -176,11 +176,11 @@ function [L, C] = distance_finder_2_cct(c1_a, c1_b, c1_c, c2_a, c2_b, c2_c, GMR_
     %%% CAPACITANCE DUE TO EARTH EFFECT %%%
     num = (yellow * red * blue)^(1/3);
     denum = (turquoise * dark_green * cream)^(1/3);
-    C_n = ((2*pi*8.85*1e-12)/(log(GMD_3_PHASE/GMR_3_PHASE)-log(num/denum)))*length;
    
     %%% CALCULATE INDUCTANCE & CAPACITANCE %%%
     L = (2*1e-7)*(log(GMD_3_PHASE/GMR_3_PHASE))*length; % calculate inductance
-    C = ((2*pi*8.85*1e-12)/log(GMD_3_PHASE/R_EQV_3_PHASE))*length; % calculate capacitance
+    C = ((2*pi*8.85418782*1e-12)/(log(GMD_3_PHASE/GMR_3_PHASE)-log(num/denum)))*length;
+
 end
 
 
