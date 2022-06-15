@@ -1,13 +1,11 @@
 % To do list:
 %     Under if 1:
 %         Calculate
-%             R_pu = R_total = (R_dc + R_ac)*length; ????
-%             For capacitance include effect of earth  
+%             R_pu = R_total = ????
 %     Under if 2:
 %         Calculate
-%             R_pu 
-%             B_pu 
-%             X_pu
+%             R_pu ????
+%             X_pu Earth effect ????
 
 close all; clear all; clc;
 
@@ -111,12 +109,57 @@ function [L, C] = distance_finder_2_cct(c1_a, c1_b, c1_c, c2_a, c2_b, c2_c, GMR_
     d_c2b_c2c = ((c2_b(1)-c2_c(1))^2 + (c2_b(2)-c2_c(2))^2 )^(0.5); % PURPLE
     
     
+    %%%%%%%% FIND DISTANCES TO CALCULATE EARTH EFFECT %%%%%%%% 
+    %%% _G  means symmetric of the point to ground %%%
+    c1_a_G = [c1_a(1), -c1_a(2)]; 
+    c1_b_G = [c1_b(1), -c1_b(2)]; 
+    c1_c_G = [c1_c(1), -c1_c(2)]; 
+    c2_a_G = [c2_a(1), -c2_a(2)];
+    c2_b_G = [c2_b(1), -c2_b(2)];
+    c2_c_G = [c2_c(1), -c2_c(2)]; 
+    %%% CALCULATE TURQUOISE COLOR %%%
+    turquoise_a = (((c2_c(1)-c1_c_G(1))^2 + (c2_c(2)-c1_c_G(2))^2 )^(0.5));
+    turquoise_b = (((c1_c(1)-c1_c_G(1))^2 + (c1_c(2)-c1_c_G(2))^2 )^(0.5));
+    turquoise_c = (((c1_c(1)-c2_c_G(1))^2 + (c1_c(2)-c2_c_G(2))^2 )^(0.5));
+    turquoise_d = (((c2_c(1)-c2_c_G(1))^2 + (c2_c(2)-c2_c_G(2))^2 )^(0.5));
+    turquoise = (turquoise_a * turquoise_b * turquoise_c * turquoise_d)^(1/4);
+    %%% CALCULATE DARK GREEN COLOR %%%
+    dark_green_a = (((c1_a(1)-c1_a_G(1))^2 + (c1_a(2)-c1_a_G(2))^2 )^(0.5));
+    dark_green_b = (((c1_a(1)-c2_a_G(1))^2 + (c1_a(2)-c2_a_G(2))^2 )^(0.5));
+    dark_green_c = (((c2_a(1)-c2_a_G(1))^2 + (c2_a(2)-c2_a_G(2))^2 )^(0.5));
+    dark_green_d = (((c2_a(1)-c1_a_G(1))^2 + (c2_a(2)-c1_a_G(2))^2 )^(0.5));
+    dark_green = (dark_green_a * dark_green_b * dark_green_c * dark_green_d)^(1/4);
+    %%% CALCULATE CREAM COLOR %%%
+    cream_a = (((c1_b(1)-c1_b_G(1))^2 + (c1_b(2)-c1_b_G(2))^2 )^(0.5));
+    cream_b = (((c1_b(1)-c2_b_G(1))^2 + (c1_b(2)-c2_b_G(2))^2 )^(0.5));
+    cream_c = (((c2_b(1)-c1_b_G(1))^2 + (c2_b(2)-c1_b_G(2))^2 )^(0.5));
+    cream_d = (((c2_b(1)-c2_b_G(1))^2 + (c2_b(2)-c2_b_G(2))^2 )^(0.5));
+    cream = (cream_a * cream_b * cream_c * cream_d)^(1/4);
+    %%% CALCULATE YELLOW COLOR %%%
+    yellow_a = (((c1_a(1)-c1_c_G(1))^2 + (c1_a(2)-c1_c_G(2))^2 )^(0.5));
+    yellow_b = (((c1_a(1)-c2_c_G(1))^2 + (c1_a(2)-c2_c_G(2))^2 )^(0.5));
+    yellow_c = (((c2_a(1)-c1_c_G(1))^2 + (c2_a(2)-c1_c_G(2))^2 )^(0.5));
+    yellow_d = (((c2_a(1)-c2_c_G(1))^2 + (c2_a(2)-c2_c_G(2))^2 )^(0.5));
+    yellow = (yellow_a * yellow_b * yellow_c * yellow_d)^(1/4);
+    %%% CALCULATE RED COLOR %%%
+    red_a = (((c1_a(1)-c1_b_G(1))^2 + (c1_a(2)-c1_b_G(2))^2 )^(0.5));
+    red_b = (((c1_a(1)-c2_b_G(1))^2 + (c1_a(2)-c2_b_G(2))^2 )^(0.5));
+    red_c = (((c2_a(1)-c1_b_G(1))^2 + (c2_a(2)-c1_b_G(2))^2 )^(0.5));
+    red_d = (((c2_a(1)-c2_b_G(1))^2 + (c2_a(2)-c2_b_G(2))^2 )^(0.5));
+    red = (red_a * red_b * red_c * red_d)^(1/4);
+    %%% CALCULATE BLUE COLOR %%%
+    blue_a = (((c1_b(1)-c1_c_G(1))^2 + (c1_b(2)-c1_c_G(2))^2 )^(0.5));
+    blue_b = (((c1_b(1)-c2_c_G(1))^2 + (c1_b(2)-c2_c_G(2))^2 )^(0.5));
+    blue_c = (((c2_b(1)-c1_c_G(1))^2 + (c2_b(2)-c1_c_G(2))^2 )^(0.5));
+    blue_d = (((c2_b(1)-c2_c_G(1))^2 + (c2_b(2)-c2_c_G(2))^2 )^(0.5));
+    blue = (blue_a * blue_b * blue_c * blue_d)^(1/4);
+    
+    
     %%% CALCULATE GMR %%%
     GMR_AA = (d_c1a_c2a * GMR_bundle)^0.5;
     GMR_BB = (d_c1b_c2b * GMR_bundle)^0.5;
     GMR_CC = (d_c1c_c2c * GMR_bundle)^0.5;
     GMR_3_PHASE = (GMR_AA * GMR_BB * GMR_CC)^(1/3);
-    
     
     %%% CALCULATE R_EQ %%%
     R_EQV_AA = (d_c1a_c2a * r_eq)^0.5; % RED LINE MULTIPLICATIONS
@@ -124,14 +167,17 @@ function [L, C] = distance_finder_2_cct(c1_a, c1_b, c1_c, c2_a, c2_b, c2_c, GMR_
     R_EQV_CC = (d_c1c_c2c * r_eq)^0.5; % PURPLE LINE MULTIPLICATIONS
     R_EQV_3_PHASE = (R_EQV_AA * R_EQV_BB * R_EQV_CC)^(1/3);
    
-    
     %%% CALCULATE GMD %%%
     GMD_AB = (d_c1a_c2b * d_c1a_c1b * d_c1b_c2a * d_c2a_c2b)^(1/4); % RED LINE MULTIPLICATIONS
     GMD_AC = (d_c1a_c1c * d_c1a_c2c * d_c1c_c2a * d_c2a_c2c)^(1/4); % YELLOW LINE MULTIPLICATIONS
     GMD_BC = (d_c1b_c1c * d_c1b_c2c * d_c1c_c2b * d_c2b_c2c)^(1/4); % PURPLE LINE MULTIPLICATIONS
     GMD_3_PHASE = (GMD_AB * GMD_AC * GMD_BC)^(1/3);
     
-    
+    %%% CAPACITANCE DUE TO EARTH EFFECT %%%
+    num = (yellow * red * blue)^(1/3);
+    denum = (turquoise * dark_green * cream)^(1/3);
+    C_n = ((2*pi*8.85*1e-12)/(log(GMD_3_PHASE/GMR_3_PHASE)-log(num/denum)))*length;
+   
     %%% CALCULATE INDUCTANCE & CAPACITANCE %%%
     L = (2*1e-7)*(log(GMD_3_PHASE/GMR_3_PHASE))*length; % calculate inductance
     C = ((2*pi*8.85*1e-12)/log(GMD_3_PHASE/R_EQV_3_PHASE))*length; % calculate capacitance
