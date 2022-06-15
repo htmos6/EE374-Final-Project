@@ -7,7 +7,6 @@
 %         Calculate
 %             R_pu 
 %             B_pu 
-%             X_pu
 
 close all; clear all; clc;
 
