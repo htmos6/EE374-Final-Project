@@ -7,6 +7,7 @@
 %         Calculate
 %             R_pu 
 %             B_pu 
+%             X_pu
 
 close all; clear all; clc;
 
@@ -20,7 +21,6 @@ library_path  = 'C:\Users\Legion\Documents\MATLAB\EE374_project\datas\library.cs
 
 
 function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
-    
     [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor, R_dc] = e237441_p1(text_path, library_path);
     
     frequency = 50; % frequency is given as 50Hz
@@ -62,7 +62,6 @@ end
 
 %%% PER UNIT REACTANCE AND SUSCEPTANCE CALCULATOR %%%
 function [R_pu, X_pu, B_pu] = RXB_pu_calculator(S_base, V_base, X_L, B_C, R_total)
-    
     S_base = S_base/1000; % in terms of KVA 
     V_base = V_base/1000; % in terms of KVA 
     R_pu = (R_total*S_base)/(((V_base)^2)*1000); % ??????????????????????????
@@ -73,7 +72,6 @@ end
 
 %%% DISTANCE/GMR/GMD CALCULATOR BETWEEN PHASES FOR SINGLE CIRCUIT %%%
 function [L, C] = distance_finder_1_cct(c1_a, c1_b, c1_c, GMR, r_eq, length)
-
     %%% FIND DISTANCES BETWEEN POINTS %%%
     d_ab = ((c1_a(1)-c1_b(1))^2 + (c1_a(2)-c1_b(2))^2 )^(0.5);
     d_bc = ((c1_b(1)-c1_c(1))^2 + (c1_b(2)-c1_c(2))^2 )^(0.5);
@@ -90,7 +88,6 @@ end
 
 %%% DISTANCE/GMR/GMD CALCULATOR BETWEEN PHASES FOR DOUBLE CIRCUIT %%%
 function [L, C] = distance_finder_2_cct(c1_a, c1_b, c1_c, c2_a, c2_b, c2_c, GMR_bundle, r_eq, length)
-    
     %%% FIND DISTANCES BETWEEN POINTS %%%
     d_c1a_c2a = ((c1_a(1)-c2_a(1))^2 + (c1_a(2)-c2_a(2))^2 )^(0.5);
     d_c1b_c2b = ((c1_b(1)-c2_b(1))^2 + (c1_b(2)-c2_b(2))^2 )^(0.5);
