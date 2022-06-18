@@ -1,11 +1,3 @@
-% To do list:
-%     Under if 1:
-%         Calculate
-%             R_pu ????
-%     Under if 2:
-%         Calculate
-%             R_pu ????
-
 close all; clear all; clc;
 
 text_path = 'C:\Users\Legion\Documents\MATLAB\EE374_project\datas\Input_file_example1.txt';
@@ -14,7 +6,7 @@ library_path  = 'C:\Users\Legion\Documents\MATLAB\EE374_project\datas\library.cs
 
 [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor] = e237441_p1(text_path, library_path); % take necessary parameters from phase 1 function in order not to repeat same code again 
 
-[R_pu, X_pu, B_pu] = e237441_p2(text_path_2, library_path);
+[R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path);
 
 
 function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
@@ -26,7 +18,7 @@ function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
     [GMR_bundle, r_eq] = bundle_GMR_calculator(conductor_radius, GMR_conductor, bundle_distance, number_of_bundle); % find your GMR of the bundle in another function to repeat many number of possibilities
 
     lines = strsplit(fileread(text_path), {'\r', '\n'}); % does not depend on number of circuit, hence extract outside the if blocks.
-    
+ 
     if (number_of_circuit == 1)
         c1_c = [str2double((lines{16}.')),str2double((lines{17}.'))]; % extract position of circuit 1 phase c
         c1_a = [str2double((lines{19}.')),str2double((lines{20}.'))]; % extract position of circuit 1 phase a
@@ -36,10 +28,10 @@ function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
         
         X_L = 2*pi*frequency*L; % calculate total reactance
         B_C = 2*pi*frequency*C; % calculate total susceptance
-        R_total = (R_dc + R_ac)*length; % ??????????????????????????
+        R_total = (R_ac)*length/number_of_bundle; % ??????????????????????????
         
         [R_pu, X_pu, B_pu] = RXB_pu_calculator(S_base, V_base, X_L, B_C, R_total) % calculate necessary parameters in per unit system
-        
+
     elseif (number_of_circuit == 2)
         c1_c = [str2double((lines{16}.')),str2double((lines{17}.'))]; % extract position of circuit 1 phase c
         c1_a = [str2double((lines{19}.')),str2double((lines{20}.'))]; % extract position of circuit 1 phase a
@@ -52,7 +44,7 @@ function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
     
         X_L = 2*pi*frequency*L; % calculate total reactance
         B_C = 2*pi*frequency*C; % calculate total susceptance
-        R_total = (R_dc + R_ac)*length; % ??????????????????????????
+        R_total = (R_ac)*length/(number_of_bundle*number_of_circuit); % ??????????????????????????
         
         [R_pu, X_pu, B_pu] = RXB_pu_calculator(S_base, V_base, X_L, B_C, R_total) % calculate necessary parameters in per unit system
     end
