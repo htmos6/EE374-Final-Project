@@ -4,9 +4,9 @@ text_path = 'C:\Users\Legion\Documents\MATLAB\EE374_project\datas\Input_file_exa
 text_path_2 = 'C:\Users\Legion\Documents\MATLAB\EE374_project\datas\Input_file_example2.txt';
 library_path  = 'C:\Users\Legion\Documents\MATLAB\EE374_project\datas\library.csv';
 
-[R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
+[R_pu, X_pu, B_pu] = exxxx_p2(text_path, library_path)
 
-function [R_pu, X_pu, B_pu] = e237441_p2(text_path, library_path)
+function [R_pu, X_pu, B_pu] = exxxx_p2(text_path, library_path)
     format long;
     %%% DATA EXTRACTION FUNCTION %%%
     function [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor] = data_extraction(text_path, library_path)
