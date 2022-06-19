@@ -3,10 +3,10 @@ close all; clear all; clc;
 text_path = 'C:\Users\Legion\Documents\MATLAB\EE374_project\datas\Input_file_example1.txt';
 text_pathh = 'C:\Users\Legion\Documents\MATLAB\EE374_project\datas\Input_file_example2.txt';
 library_path  = 'C:\Users\Legion\Documents\MATLAB\EE374_project\datas\library.csv';
-[S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor] = e237441_p1(text_path, library_path)
+[S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor] = exxxx_p1(text_path, library_path)
 
 
-function [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor] = e237441_p1(text_path, library_path)
+function [S_base, V_base, number_of_circuit, number_of_bundle, bundle_distance, length, conductor_name, outside_diameter, R_ac, GMR_conductor] = exxxx_p1(text_path, library_path)
 lib = readtable(library_path);                                                                  % read excel file as a table
 
 lib.Properties.VariableNames([2 3 4 5 6 7 8 ]) = {'Aluminum_Area_m2' 'Strand' 'Layers_Of_Aluminum' 'Outside_Diameter_m' 'DC_Resistance_20C_ohm_per_m' 'AC_50Hz_Resistance_20C_ohm_per_m' 'GMR_m'};
